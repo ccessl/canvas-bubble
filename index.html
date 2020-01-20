@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style type="text/css">
+        #bubble
+        {
+            border:1px solid black;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <canvas id="bubble" width="400px" height="400px"></canvas>
+</div>
+<script>
+    var canvas=document.getElementById('bubble');
+    var ctx=canvas.getContext('2d');
+    var w=ctx.canvas.width;
+    var h=ctx.canvas.height;
+    var color=['#ffc0cb','#dda0dd','#9370db','#6495ed','#87cefa','#ffffff','#fa8072','#a0522d','#ff8c00','#008000'];
+    var value=[];
+    //气泡半径
+    var r=20;
+    //画气泡
+    function drawBubble(x,y,r,n)
+    {
+        ctx.save();
+        var i=n%(color.length);
+        ctx.globalAlpha=0.3;
+        ctx.strokeStyle='rgba(0,0,0,0.5)';
+        ctx.lineWidth=2;
+        ctx.fillStyle=color[i];
+        ctx.beginPath();
+        ctx.moveTo(x,y);
+        ctx.arc(x,y,r,0,2*Math.PI,true);
+        ctx.stroke();
+        ctx.closePath();
+        //设置阴影
+        ctx.shadowBlur=7;
+        ctx.shadowColor='#fff';
+        ctx.shadowOffsetX=10;
+        ctx.shadowOffsetY=-6;
+        ctx.fill();
+        //画光圈
+        ctx.beginPath();
+        ctx.strokeStyle='rgba(255,255,255,0.5)';
+        ctx.lineCap='round';
+        ctx.lineWidth=3;
+        ctx.arc(x,y,r/2,(Math.PI*2)/0.9,(Math.PI*2),true);
+        ctx.stroke();
+        ctx.restore();
+    }
+    //放数据
+    function putValue(x,y,mx,my)
+    {
+        var temp={};
+        temp.color=0;
+        temp.x=x;
+        temp.y=y;
+        temp.movex=mx;
+        temp.movey=my;
+        value.push(temp);
+    }
+    //移动
+    function move()
+    {
+        //ctx.restore();
+        value.forEach(function(item,index)
+        {
+            var newx=item.x+item.movex*15;
+            var newy=item.y+item.movey*15;
+            //判断是否到达边界
+            if(newx>r&&newx<(w-r)&&newy>r&&newy<(h-r))
+            {
+                drawBubble(newx,newy,r,item.color);
+                item.x=newx;
+                item.y=newy;
+            }
+            else if((newx>=(w-r)&&newy>=(h-r))||(newx>=(w-r)&&newy<r)||(newx<r&&newy<r)||(newx<r&&newy>(h-r)))//角
+            {
+                //换颜色
+                item.color++;
+                item.color=item.color%color.length;
+                drawBubble(newx,newy,item.color);
+                item.x=newx;
+                item.y=newy;
+                item.movex=0-item.movex;
+                item.movex=0-item.movex;
+            }
+            else if(newx>=(w-r)||newx<r)//左右边
+            {
+                item.color++;
+                item.color=item.color%color.length;
+                drawBubble(newx,newy,item.color);
+                item.x=newx;
+                item.y=newy;
+                item.movex=0-item.movex;
+            }
+            else if(newy>=(h-r)||newy<r)//上下边
+            {
+                item.color++;
+                drawBubble(newx,newy,item.color);
+                item.color=item.color%color.length;
+                item.x=newx;
+                item.y=newy;
+                item.movey=0-item.movey;
+            }
+        });
+
+    }
+    function draw(x,y)
+    {
+        drawBubble(x,y,r,0);
+        var mx=Math.random()-0.5;
+        var my=Math.random()-0.5;
+        putValue(x,y,mx,my);
+    }
+    ctx.fillStyle='#000';
+    ctx.fillRect(0,0,w,h);
+    draw(w/2,h/2);
+    //设置间隔性定时器
+    setInterval(function(){
+        ctx.clearRect(0,0,w,h);
+        ctx.fillStyle='#000';
+        ctx.fillRect(0,0,w,h);
+        move();
+
+    },100);
+    canvas.onclick=function(evt)
+    {
+        draw(evt.pageX,evt.pageY);
+
+    }
+</script>
+</body>
+</html>
